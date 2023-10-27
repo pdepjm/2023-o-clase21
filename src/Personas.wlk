@@ -10,6 +10,10 @@ class Persona {
 		enfermedades.add(enfermedad)
 	}
 	
+	method curarse(enfermedad){
+		enfermedades.remove(enfermedad)
+	}
+	
 	method validarCantidadEnfermedades(){
 		if(enfermedades.size() >= 7){
 			throw new DomainException(message="No se pueden contraer más enfermedades")
@@ -36,4 +40,67 @@ class Persona {
 	
 	method laQueMasCelulasAfecta() = enfermedades.max({enfermedad => enfermedad.cantCelulasAmenazadas()})
 	
-}	
+	method recibirDosis(dosis){
+		enfermedades.forEach({enfermedad => enfermedad.atenuar(dosis, self)})
+	}
+	
+	method bajarTodaTemperatura(){
+		temperatura = 0
+	}
+	
+	method estabilizate(){
+		temperatura = 36
+	}
+}
+
+
+class Medico inherits Persona{
+	var dosis
+	var especialidad
+	
+	method atender(paciente){
+		paciente.recibirDosis(dosis)
+		especialidad.tratamientoExtra(paciente)
+	}
+	
+	override method contraer(enfermedad){
+		super(enfermedad) //superclase.contraer(enfermedad)
+		self.atender(self)
+	}
+}
+
+//Especialidades
+
+class Cardiologo{
+	var experiencia
+	
+	method tratamientoExtra(persona){
+		persona.recibirDosis(10 * experiencia)
+	}
+}
+
+object enfermero{
+	
+	method tratamientoExtra(persona){
+		persona.recibirDosis(10)
+	}
+}
+
+object guardia{
+	method tratamientoExtra(persona){
+		persona.estabilizate()
+	}
+}
+
+object sinEspecialidad{
+	method tratamientoExtra(persona){}
+}
+
+class JefeDepartamento inherits Medico {
+	
+	const subordinados = []
+	
+	override method atender(paciente){
+		subordinados.anyOne().atender(paciente)
+	}
+}
